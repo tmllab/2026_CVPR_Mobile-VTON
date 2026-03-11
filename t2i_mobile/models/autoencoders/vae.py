@@ -20,12 +20,12 @@ if WORK_DIR not in sys.path:
     logger.warning(f"Working directory ({WORK_DIR}) is not in sys.path. Adding it.")
     sys.path.append(WORK_DIR)
 
-from t2i_mobile.v1.models.convolutions import get_convolution_module
-from t2i_mobile.v1.models.unets.unet_2d_blocks import (
+from t2i_mobile.models.convolutions import get_convolution_module
+from t2i_mobile.models.unets.unet_2d_blocks import (
     get_decoder_mid_block,
     get_up_block,
 )
-from t2i_mobile.v1.models.activations import get_activation
+from t2i_mobile.models.activations import get_activation
 
 
 class Decoder(nn.Module):

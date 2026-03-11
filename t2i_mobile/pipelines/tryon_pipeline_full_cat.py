@@ -34,9 +34,9 @@ if WORK_DIR not in sys.path:
     logger.warning(f"Working directory ({WORK_DIR}) is not in sys.path. Adding it.")
     sys.path.append(WORK_DIR)
 
-from t2i_mobile.v1.models.unets.unet_2d_condition_garment import UNet2DConditionModel as Unet_Garment
-from t2i_mobile.v1.models.unets.unet_2d_condition_tryon import UNet2DConditionModel as Unet_Tryon
-from t2i_mobile.v1.models.autoencoders.vae import Decoder
+from t2i_mobile.models.unets.unet_2d_condition_garment import UNet2DConditionModel as Unet_Garment
+from t2i_mobile.models.unets.unet_2d_condition_tryon import UNet2DConditionModel as Unet_Tryon
+from t2i_mobile.models.autoencoders.vae import Decoder
 
 class T2IMobilePipelineBase(DiffusionPipeline):
     r"""Modified from StableDiffusion3Pipeline in diffusers.pipelines.stable_diffusion_3.pipeline_stable_diffusion_3

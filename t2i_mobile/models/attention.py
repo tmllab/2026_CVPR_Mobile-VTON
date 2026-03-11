@@ -25,7 +25,7 @@ if WORK_DIR not in sys.path:
     logger.warning(f"Working directory ({WORK_DIR}) is not in sys.path. Adding it.")
     sys.path.append(WORK_DIR)
 
-from t2i_mobile.v1.models.attention_processor import get_attention_module, get_attention_processor
+from t2i_mobile.models.attention_processor import get_attention_module, get_attention_processor
 
 
 @maybe_allow_in_graph

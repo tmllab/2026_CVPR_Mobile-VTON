@@ -1,7 +1,7 @@
 # inference for VITON-HD dataset
 # Paired
 accelerate launch --machine_rank 0 \
-    --main_process_ip 0.0.0.0 --main_process_port 20056 --num_machines 1 --num_processes 4 inference_full_cat.py \
+    --main_process_ip 0.0.0.0 --main_process_port 20056 --num_machines 1 --num_processes 4 inference.py \
     --data_dir ../VITON-HD \
     --output_dir output/test_release \
     --order paired \
@@ -14,7 +14,7 @@ accelerate launch --machine_rank 0 \
 
 # Unpaired
 accelerate launch --machine_rank 0 \
-    --main_process_ip 0.0.0.0 --main_process_port 20056 --num_machines 1 --num_processes 4 inference_full_cat.py \
+    --main_process_ip 0.0.0.0 --main_process_port 20056 --num_machines 1 --num_processes 4 inference.py \
     --data_dir ../VITON-HD \
     --output_dir output/VITON/unpaired \
     --order unpaired \
@@ -28,7 +28,7 @@ accelerate launch --machine_rank 0 \
 # inference for DressCode dataset
 # Paired
 accelerate launch --machine_rank 0 \
-    --main_process_ip 0.0.0.0 --main_process_port 20056 --num_machines 1 --num_processes 4 inference_full_cat_dc.py \
+    --main_process_ip 0.0.0.0 --main_process_port 20056 --num_machines 1 --num_processes 4 inference_dc.py \
     --data_dir ../Dress_code \
     --output_dir output/DC/paired \
     --order paired \
@@ -42,7 +42,7 @@ accelerate launch --machine_rank 0 \
 
 # Unpaired
 accelerate launch --machine_rank 0 \
-    --main_process_ip 0.0.0.0 --main_process_port 20056 --num_machines 1 --num_processes 4 inference_full_cat_dc.py \
+    --main_process_ip 0.0.0.0 --main_process_port 20056 --num_machines 1 --num_processes 4 inference_dc.py \
     --data_dir ../Dress_code \
     --output_dir output/DC/unpaired \
     --order unpaired \

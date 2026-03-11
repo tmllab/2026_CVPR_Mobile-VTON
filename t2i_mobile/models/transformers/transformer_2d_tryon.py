@@ -23,7 +23,7 @@ if WORK_DIR not in sys.path:
     logger.warning(f"Working directory ({WORK_DIR}) is not in sys.path. Adding it.")
     sys.path.append(WORK_DIR)
 
-from t2i_mobile.v1.models.attention import get_transformer_block
+from t2i_mobile.models.attention import get_transformer_block
 
 
 class Transformer2DModel(LegacyModelMixin, LegacyConfigMixin):
@@ -174,7 +174,7 @@ class Transformer2DModel(LegacyModelMixin, LegacyConfigMixin):
             norm_eps=self.config.norm_eps,
             attention_type=self.config.attention_type,
         )
-        if transformer_block_type == "basictransformerblock" or transformer_block_type == "basictransformerblockgarment" or transformer_block_type == "basictransformerblocktryon":
+        if transformer_block_type == "basictransformerblock" or transformer_block_type == "basictransformerblocktryon":
             transformer_block_kwargs.update(dict(
                 attn1_module=attn_module,
                 attn1_processor_type=attn_processor_type,
@@ -233,7 +233,7 @@ class Transformer2DModel(LegacyModelMixin, LegacyConfigMixin):
             norm_eps=self.config.norm_eps,
             attention_type=self.config.attention_type,
         )
-        if transformer_block_type == "basictransformerblock" or transformer_block_type == "basictransformerblockgarment" or transformer_block_type == "basictransformerblocktryon":
+        if transformer_block_type == "basictransformerblock" or transformer_block_type == "basictransformerblocktryon":
             transformer_block_kwargs.update(dict(
                 attn1_module=attn_module,
                 attn1_processor_type=attn_processor_type,
@@ -297,7 +297,7 @@ class Transformer2DModel(LegacyModelMixin, LegacyConfigMixin):
             norm_eps=self.config.norm_eps,
             attention_type=self.config.attention_type,
         )
-        if transformer_block_type == "hswbasictransformerblock" or transformer_block_type == "hswbasictransformerblockgarment" or transformer_block_type == "hswbasictransformerblocktryon":
+        if transformer_block_type == "basictransformerblock" or transformer_block_type == "basictransformerblocktryon":
             transformer_block_kwargs.update(dict(
                 attn1_module=attn_module,
                 attn1_processor_type=attn_processor_type,
@@ -309,7 +309,7 @@ class Transformer2DModel(LegacyModelMixin, LegacyConfigMixin):
                 use_self_attention=self.config.use_self_attention,
             ))
         else:
-            raise ValueError(f"transformer_block_type '{transformer_block_type}' not supported. Please use 'HSWBasicTransformerBlock'.")
+            raise ValueError(f"transformer_block_type '{transformer_block_type}' not supported. Please use 'BasicTransformerBlock'.")
         self.transformer_blocks = nn.ModuleList(
             [
                 get_transformer_block(transformer_block_type, **transformer_block_kwargs)
@@ -361,6 +361,9 @@ class Transformer2DModel(LegacyModelMixin, LegacyConfigMixin):
         encoder_attention_mask: Optional[torch.Tensor] = None,
         image_rotary_emb: Optional[torch.Tensor] = None,
         return_dict: bool = True,
+        
+        garment_features=None,
+        curr_garment_feat_idx=0,
     ):
         """
         The [`Transformer2DModel`] forward method.
@@ -444,16 +447,16 @@ class Transformer2DModel(LegacyModelMixin, LegacyConfigMixin):
             if torch.is_grad_enabled() and self.gradient_checkpointing:
 
                 def create_custom_forward(module, return_dict=None):
-                    def custom_forward(*inputs):
+                    def custom_forward(*inputs, **kwargs):
                         if return_dict is not None:
-                            return module(*inputs, return_dict=return_dict)
+                            return module(*inputs, return_dict=return_dict, **kwargs)
                         else:
-                            return module(*inputs)
+                            return module(*inputs, **kwargs)
 
                     return custom_forward
 
                 ckpt_kwargs: Dict[str, Any] = {"use_reentrant": False} if is_torch_version(">=", "1.11.0") else {}
-                hidden_states = torch.utils.checkpoint.checkpoint(
+                hidden_states, curr_garment_feat_idx = torch.utils.checkpoint.checkpoint(
                     create_custom_forward(block),
                     hidden_states,
                     attention_mask,
@@ -464,9 +467,12 @@ class Transformer2DModel(LegacyModelMixin, LegacyConfigMixin):
                     class_labels,
                     image_rotary_emb,
                     **ckpt_kwargs,
+                    
+                    garment_features=garment_features,
+                    curr_garment_feat_idx=curr_garment_feat_idx,
                 )
             else:
-                hidden_states = block(
+                hidden_states, curr_garment_feat_idx = block(
                     hidden_states,
                     attention_mask=attention_mask,
                     encoder_hidden_states=encoder_hidden_states,
@@ -475,9 +481,11 @@ class Transformer2DModel(LegacyModelMixin, LegacyConfigMixin):
                     cross_attention_kwargs=cross_attention_kwargs,
                     class_labels=class_labels,
                     image_rotary_emb=image_rotary_emb,
+                    
+                    garment_features=garment_features,
+                    curr_garment_feat_idx=curr_garment_feat_idx,
                 )
-        # print(len(hidden_states)) # 2
-        # hidden_states = hidden_states[0]
+
         # 3. Output
         if self.is_input_continuous:
             output = self._get_output_for_continuous_inputs(
@@ -501,9 +509,9 @@ class Transformer2DModel(LegacyModelMixin, LegacyConfigMixin):
             )
 
         if not return_dict:
-            return (output,)
+            return (output,), curr_garment_feat_idx
 
-        return Transformer2DModelOutput(sample=output)
+        return Transformer2DModelOutput(sample=output), curr_garment_feat_idx
 
     def _operate_on_continuous_inputs(self, hidden_states):
         batch, _, height, width = hidden_states.shape

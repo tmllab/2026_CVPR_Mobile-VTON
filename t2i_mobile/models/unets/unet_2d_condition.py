@@ -24,9 +24,7 @@ from diffusers.models.embeddings import (
     GaussianFourierProjection,
     GLIGENTextBoundingboxProjection,
     ImageHintTimeEmbedding,
-    ImageProjection,
     ImageTimeEmbedding,
-    TextImageProjection,
     TextImageTimeEmbedding,
     TextTimeEmbedding,
     TimestepEmbedding,
@@ -47,17 +45,18 @@ if WORK_DIR not in sys.path:
     sys.path.append(WORK_DIR)
 
 
-from t2i_mobile.v1.models.unets.unet_2d_blocks_garment import (
+from t2i_mobile.models.unets.unet_2d_blocks import (
     get_down_block,
     get_mid_block,
     get_up_block,
 )
-from t2i_mobile.v1.models.activations import get_activation
-from t2i_mobile.v1.models.convolutions import get_convolution_module
-from t2i_mobile.v1.models.embeddings import get_time_text_embedding_module, get_time_embedding_module, get_text_projection_module
+from t2i_mobile.models.activations import get_activation
+from t2i_mobile.models.convolutions import get_convolution_module
+from t2i_mobile.models.embeddings import get_time_text_embedding_module, get_time_embedding_module, get_text_projection_module
+from ip_adapter.ip_adapter import Resampler
+
 
 import torch.nn.functional as F
-
 
 
 def resize_tensor(x, size=(1024, 1024), align_corners=False):
@@ -270,9 +269,23 @@ class UNet2DConditionModel(
             ))
         else:
             raise NotImplementedError(f"`conv_in_module` {conv_in_module} not implemented. Please use `Conv2d` or `SepConv2d`.")
-
+        # self.conv_in = nn.Conv2d(
+        #     in_channels, block_out_channels[0], kernel_size=conv_in_kernel, padding=conv_in_padding
+        # )
         self.conv_in = get_convolution_module(conv_in_module, **conv_in_kwargs)
-            
+        
+        if self.config.encoder_hid_dim_type == "ip_image_proj":
+            self.encoder_hid_proj = Resampler(
+                dim=1536, 
+                depth=4,
+                dim_head=64,
+                heads=20,
+                num_queries=16,
+                embedding_dim=1536, 
+                output_dim=4096, 
+                ff_mult=4,
+            )
+
         # time
         self.use_pooled_projection = use_pooled_projection
         time_text_embedding_mode = time_text_embedding_mode.lower()
@@ -301,12 +314,6 @@ class UNet2DConditionModel(
                 cond_proj_dim=time_cond_proj_dim,
             )
             self.time_embedding = get_time_embedding_module(time_embedding_module, **time_embedding_kwargs)
-
-            self._set_encoder_hid_proj(
-                encoder_hid_dim_type,
-                cross_attention_dim=cross_attention_dim,
-                encoder_hid_dim=encoder_hid_dim,
-            )
 
             # class embedding
             self._set_class_embedding(
@@ -373,7 +380,7 @@ class UNet2DConditionModel(
             logger.warning(f"UNet2DConditionModel::__init__ - when set time_text_embedding_mode to {time_text_embedding_mode}, the following parameters are ignored: time_embedding_type({time_embedding_type}), encoder_hid_dim_type({encoder_hid_dim_type}), class_embed_type({class_embed_type}), addition_embed_type({addition_embed_type}), time_embedding_act_fn({time_embedding_act_fn})")
 
             self.time_embedding = None
-            self.encoder_hid_proj = None
+            # self.encoder_hid_proj = None
             self.class_embedding = None
             self.add_embedding = None
             self.add_time_proj = None
@@ -702,6 +709,7 @@ class UNet2DConditionModel(
             ))
         else:
             raise NotImplementedError(f"`conv_out_module` {conv_out_module} not implemented. Please use `Conv2d` or `SepConv2d`.")
+
         self.conv_out = get_convolution_module(conv_out_module, **conv_out_kwargs)
 
         self._set_pos_net_if_use_gligen(attention_type=attention_type, cross_attention_dim=cross_attention_dim)
@@ -790,46 +798,6 @@ class UNet2DConditionModel(
             )
 
         return time_embed_dim, timestep_input_dim
-
-    def _set_encoder_hid_proj(
-        self,
-        encoder_hid_dim_type: Optional[str],
-        cross_attention_dim: Union[int, Tuple[int]],
-        encoder_hid_dim: Optional[int],
-    ):
-        if encoder_hid_dim_type is None and encoder_hid_dim is not None:
-            encoder_hid_dim_type = "text_proj"
-            self.register_to_config(encoder_hid_dim_type=encoder_hid_dim_type)
-            logger.info("encoder_hid_dim_type defaults to 'text_proj' as `encoder_hid_dim` is defined.")
-
-        if encoder_hid_dim is None and encoder_hid_dim_type is not None:
-            raise ValueError(
-                f"`encoder_hid_dim` has to be defined when `encoder_hid_dim_type` is set to {encoder_hid_dim_type}."
-            )
-
-        if encoder_hid_dim_type == "text_proj":
-            self.encoder_hid_proj = nn.Linear(encoder_hid_dim, cross_attention_dim)
-        elif encoder_hid_dim_type == "text_image_proj":
-            # image_embed_dim DOESN'T have to be `cross_attention_dim`. To not clutter the __init__ too much
-            # they are set to `cross_attention_dim` here as this is exactly the required dimension for the currently only use
-            # case when `addition_embed_type == "text_image_proj"` (Kandinsky 2.1)`
-            self.encoder_hid_proj = TextImageProjection(
-                text_embed_dim=encoder_hid_dim,
-                image_embed_dim=cross_attention_dim,
-                cross_attention_dim=cross_attention_dim,
-            )
-        elif encoder_hid_dim_type == "image_proj":
-            # Kandinsky 2.2
-            self.encoder_hid_proj = ImageProjection(
-                image_embed_dim=encoder_hid_dim,
-                cross_attention_dim=cross_attention_dim,
-            )
-        elif encoder_hid_dim_type is not None:
-            raise ValueError(
-                f"`encoder_hid_dim_type`: {encoder_hid_dim_type} must be None, 'text_proj', 'text_image_proj', or 'image_proj'."
-            )
-        else:
-            self.encoder_hid_proj = None
 
     def _set_class_embedding(
         self,
@@ -1284,8 +1252,8 @@ class UNet2DConditionModel(
                 encoder_hidden_states = self.text_encoder_hid_proj(encoder_hidden_states)
 
             image_embeds = added_cond_kwargs.get("image_embeds")
-            image_embeds = self.encoder_hid_proj(image_embeds)
-            encoder_hidden_states = (encoder_hidden_states, image_embeds)
+            # image_embeds = self.encoder_hid_proj(image_embeds)
+            encoder_hidden_states = torch.cat([encoder_hidden_states, image_embeds], dim=1)
         return encoder_hidden_states
 
     def forward(
@@ -1443,7 +1411,6 @@ class UNet2DConditionModel(
 
         # 2. pre-process
         sample = self.conv_in(sample)
-        garment_features=[]
 
         # 2.5 GLIGEN position net
         if cross_attention_kwargs is not None and cross_attention_kwargs.get("gligen", None) is not None:
@@ -1505,7 +1472,7 @@ class UNet2DConditionModel(
                     image_rotary_emb = None
 
                 if image_rotary_emb is not None:
-                    sample, res_samples, out_garment_feat = downsample_block(
+                    sample, res_samples = downsample_block(
                         hidden_states=sample,
                         temb=emb,
                         encoder_hidden_states=encoder_hidden_states,
@@ -1515,8 +1482,6 @@ class UNet2DConditionModel(
                         image_rotary_emb=image_rotary_emb,
                         **additional_residuals,
                     )
-                    
-                    garment_features += out_garment_feat
                 else:
                     sample, res_samples = downsample_block(
                         hidden_states=sample,
@@ -1553,7 +1518,7 @@ class UNet2DConditionModel(
                 else:
                     image_rotary_emb = None
                 if image_rotary_emb is not None:
-                    sample, out_garment_feat = self.mid_block(
+                    sample = self.mid_block(
                         sample,
                         emb,
                         encoder_hidden_states=encoder_hidden_states,
@@ -1562,7 +1527,6 @@ class UNet2DConditionModel(
                         encoder_attention_mask=encoder_attention_mask,
                         image_rotary_emb=image_rotary_emb,
                     )
-                    garment_features += out_garment_feat
                 else:
                     sample = self.mid_block(
                         sample,
@@ -1613,7 +1577,7 @@ class UNet2DConditionModel(
                 else:
                     image_rotary_emb = None
                 if image_rotary_emb is not None:
-                    sample, out_garment_feat = upsample_block(
+                    sample = upsample_block(
                         hidden_states=sample,
                         temb=emb,
                         res_hidden_states_tuple=res_samples,
@@ -1624,7 +1588,6 @@ class UNet2DConditionModel(
                         encoder_attention_mask=encoder_attention_mask,
                         image_rotary_emb=image_rotary_emb,
                     )
-                    garment_features += out_garment_feat
                 else:
                     sample = upsample_block(
                         hidden_states=sample,
@@ -1655,9 +1618,9 @@ class UNet2DConditionModel(
             unscale_lora_layers(self, lora_scale)
 
         if not return_dict:
-            return (sample,), garment_features
+            return (sample,)
 
-        return UNet2DConditionOutput(sample=sample), garment_features
+        return UNet2DConditionOutput(sample=sample)
 
     def calculate_2d_rope_emb(self, block_out_channel, num_attention_heads, image_height, image_width):
         image_rotary_emb = get_2d_rotary_pos_embed(
