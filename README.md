@@ -35,7 +35,7 @@ conda activate mobile
 ### VITON-HD
 You can download VITON-HD dataset from [VITON-HD](https://github.com/shadow2496/VITON-HD).
 
-After download VITON-HD dataset, move vitonhd_test_tagged.json into the test folder, and move vitonhd_train_tagged.json into the train folder.
+<!-- After download VITON-HD dataset, move vitonhd_test_tagged.json into the test folder, and move vitonhd_train_tagged.json into the train folder. -->
 
 Structure of the Dataset directory should be as follows.
 
@@ -46,23 +46,19 @@ train
 |-- image-densepose
 |-- agnostic-mask
 |-- cloth
-|-- vitonhd_train_tagged.json
 
 test
 |-- image
 |-- image-densepose
 |-- agnostic-mask
 |-- cloth
-|-- vitonhd_test_tagged.json
 
 ```
 
 ### DressCode
 You can download DressCode dataset from [DressCode](https://github.com/aimagelab/dress-code).
 
-We provide pre-computed densepose images and captions for garments [here](https://kaistackr-my.sharepoint.com/:u:/g/personal/cpis7_kaist_ac_kr/EaIPRG-aiRRIopz9i002FOwBDa-0-BHUKVZ7Ia5yAVVG3A?e=YxkAip).
-
-We used [detectron2](https://github.com/facebookresearch/detectron2) for obtaining densepose images, refer [here](https://github.com/sangyun884/HR-VITON/issues/45) for more details.
+IDM-VTON provide pre-computed densepose images and captions for garments [here](https://kaistackr-my.sharepoint.com/:u:/g/personal/cpis7_kaist_ac_kr/EaIPRG-aiRRIopz9i002FOwBDa-0-BHUKVZ7Ia5yAVVG3A?e=YxkAip).
 
 After download the DressCode dataset, place image-densepose directories and caption text files as follows.
 
@@ -78,8 +74,18 @@ DressCode
 
 ## Inference
 
-All scripts are shown in the inference.sh
+VITON-HD and DressCode inference scripts are shown in the inference.sh
 
+## Acknowledgements
+
+
+Thanks [IP-Adapter](https://github.com/tencent-ailab/IP-Adapter) for base codes.
+
+Thanks [IDM-VTON](https://github.com/yisol/IDM-VTON.git) for densepose of DressCode dataset.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/image?repos=2026_CVPR_Mobile-VTON/2026_CVPR_Mobile-VTON&type=date&legend=top-left)](https://www.star-history.com/?repos=2026_CVPR_Mobile-VTON%2F2026_CVPR_Mobile-VTON&type=date&legend=top-left)
 
 ## Citation
 ```
