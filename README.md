@@ -1,5 +1,5 @@
 <div align="center">
-<h1>\textsc{Mobile-VTON}: High-Fidelity On-Device Virtual Try-On</h1>
+<h1>Mobile-VTON: High-Fidelity On-Device Virtual Try-On</h1>
 
 <a href='https://zhenchenwan.github.io/Mobile-VTON/'><img src='https://img.shields.io/badge/Project-Page-green'></a>
 <a href='https://arxiv.org/abs/2603.00947'><img src='https://img.shields.io/badge/Paper-Arxiv-red'></a>
