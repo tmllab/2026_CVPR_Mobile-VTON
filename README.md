@@ -3,7 +3,7 @@
 
 <a href='https://zhenchenwan.github.io/Mobile-VTON/'><img src='https://img.shields.io/badge/Project-Page-green'></a>
 <a href='https://arxiv.org/abs/2603.00947'><img src='https://img.shields.io/badge/Paper-Arxiv-red'></a>
-<!-- <a href=''><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Model-blue'></a> -->
+<a href='https://huggingface.co/FlashStight/Mobile-VTON'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Model-blue'></a>
 
 
 </div>
@@ -35,23 +35,19 @@ conda activate mobile
 ### VITON-HD
 You can download VITON-HD dataset from [VITON-HD](https://github.com/shadow2496/VITON-HD).
 
-<!-- After download VITON-HD dataset, move vitonhd_test_tagged.json into the test folder, and move vitonhd_train_tagged.json into the train folder. -->
+After download VITON-HD dataset, move txt_files/image_descriptions.txt file into the test folder, and move vitonhd_train_tagged.json into the train folder.
 
 Structure of the Dataset directory should be as follows.
 
 ```
-
-train
-|-- image
-|-- image-densepose
-|-- agnostic-mask
-|-- cloth
 
 test
 |-- image
 |-- image-densepose
 |-- agnostic-mask
 |-- cloth
+|-- image_descriptions.txt
+|-- ...
 
 ```
 
@@ -60,14 +56,14 @@ You can download DressCode dataset from [DressCode](https://github.com/aimagelab
 
 IDM-VTON provide pre-computed densepose images and captions for garments [here](https://kaistackr-my.sharepoint.com/:u:/g/personal/cpis7_kaist_ac_kr/EaIPRG-aiRRIopz9i002FOwBDa-0-BHUKVZ7Ia5yAVVG3A?e=YxkAip).
 
-After download the DressCode dataset, place image-densepose directories and caption text files as follows.
+After download the DressCode dataset, place image-densepose directories and txt_files/dc_descriptions.txt files as follows.
 
 ```
 DressCode
 |-- upper_body
     |-- images
     |-- image-densepose
-    |-- image_descriptions.txt
+    |-- dc_descriptions.txt
     |-- ...
 ```
 
