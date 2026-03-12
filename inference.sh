@@ -3,7 +3,7 @@
 accelerate launch --machine_rank 0 \
     --main_process_ip 0.0.0.0 --main_process_port 20056 --num_machines 1 --num_processes 4 inference.py \
     --data_dir ../VITON-HD \
-    --output_dir output/test_release \
+    --output_dir output/VITON/paired \
     --order paired \
     --height 1024 --width 768 \
     --test_batch_size 16 \

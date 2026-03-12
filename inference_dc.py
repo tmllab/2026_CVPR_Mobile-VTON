@@ -25,17 +25,17 @@ WORK_DIR = osp.abspath(osp.join(osp.dirname(__file__), "../.."))
 if WORK_DIR not in sys.path:
     sys.path.append(WORK_DIR)
 
-from t2i_mobile.utils.misc import get_real_path
-from t2i_mobile.models.autoencoders.vae import Decoder
+from Mobile_VTON.utils.misc import get_real_path
+from Mobile_VTON.models.autoencoders.vae import Decoder
 
-from t2i_mobile.models.unets.unet_2d_condition_tryon import (
+from Mobile_VTON.models.unets.unet_2d_condition_tryon import (
     UNet2DConditionModel as Unet_Tryon
 )
-from t2i_mobile.models.unets.unet_2d_condition_garment import (
+from Mobile_VTON.models.unets.unet_2d_condition_garment import (
     UNet2DConditionModel as Unet_Garment
 )
 
-from t2i_mobile.pipelines.tryon_pipeline_full_cat import T2IMobilePipelineV1_3_NotLoadingT5_Decoder as TryonPipeline
+from Mobile_VTON.pipelines.tryon_pipeline_full_cat import T2IMobilePipelineV1_3_NotLoadingT5_Decoder as TryonPipeline
 
 
 class DresscodeTestDataset(data.Dataset):
