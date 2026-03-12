@@ -200,8 +200,8 @@ def main():
     vae = AutoencoderKL.from_pretrained(args.checkpoint_path, subfolder="vae")
 
     # VAE decoder
-    vd_cfg = get_real_path(args.checkpoint_path + "/vae_decoder/decoder-exp19-step6000.json")
-    vd_ckpt = get_real_path(args.checkpoint_path + "/vae_decoder/decoder-exp19-step6000.pt")
+    vd_cfg = get_real_path(args.checkpoint_path + "/vae_decoder/decoder.json")
+    vd_ckpt = get_real_path(args.checkpoint_path + "/vae_decoder/decoder.pt")
     with open(vd_cfg, "r") as f:
         vd_cfg_json = json.load(f)
     vae_decoder = Decoder(**vd_cfg_json)
