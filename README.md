@@ -81,7 +81,7 @@ Thanks [IDM-VTON](https://github.com/yisol/IDM-VTON.git) for densepose of DressC
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/image?repos=2026_CVPR_Mobile-VTON/2026_CVPR_Mobile-VTON&type=date&legend=top-left)](https://www.star-history.com/?repos=2026_CVPR_Mobile-VTON%2F2026_CVPR_Mobile-VTON&type=date&legend=top-left)
+[![Star History Chart](https://api.star-history.com/image?repos=tmllab/2026_CVPR_Mobile-VTON&type=date&legend=top-left)](https://www.star-history.com/?repos=tmllab%2F2026_CVPR_Mobile-VTON&type=date&legend=top-left)
 
 ## Citation
 ```
