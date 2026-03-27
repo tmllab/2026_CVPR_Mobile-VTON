@@ -85,14 +85,12 @@ Thanks [IDM-VTON](https://github.com/yisol/IDM-VTON.git) for densepose of DressC
 
 ## Citation
 ```
-@misc{wan2026textscmobilevtonhighfidelityondevicevirtual,
-      title={\textsc{Mobile-VTON}: High-Fidelity On-Device Virtual Try-On}, 
-      author={Zhenchen Wan and Ce Chen and Runqi Lin and Jiaxin Huang and Tianxi Chen and Yanwu Xu and Tongliang Liu and Mingming Gong},
-      year={2026},
-      eprint={2603.00947},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2603.00947}
+@article{wan2026mobile,
+  title={Mobile-VTON: High-Fidelity On-Device Virtual Try-On},
+  author={Wan, Zhenchen and Chen, Ce and Lin, Runqi and Huang, Jiaxin and Chen, Tianxi and Xu, Yanwu and Liu, Tongliang and Gong, Mingming},
+  journal={arXiv e-prints},
+  pages={arXiv--2603},
+  year={2026}
 }
 ```
 
