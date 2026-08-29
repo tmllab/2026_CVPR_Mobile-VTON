@@ -79,10 +79,6 @@ Thanks [IP-Adapter](https://github.com/tencent-ailab/IP-Adapter) for base codes.
 
 Thanks [IDM-VTON](https://github.com/yisol/IDM-VTON.git) for densepose of DressCode dataset.
 
-## Star History
-
-[![Star History Chart](https://api.star-history.com/image?repos=tmllab/2026_CVPR_Mobile-VTON&type=date&legend=top-left)](https://www.star-history.com/?repos=tmllab%2F2026_CVPR_Mobile-VTON&type=date&legend=top-left)
-
 ## Citation
 ```
 @article{wan2026mobile,
